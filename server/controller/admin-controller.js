@@ -1,0 +1,117 @@
+const User = require("../models/user-model");
+const Contact = require("../models/contact-model");
+
+// *-------------------------------
+//* getAllUsers Logic 📝
+// *-------------------------------
+
+const getAllUsers = async (req, res, next) => {
+  try {
+    const users = await User.find({}, { password: 0 }); // Exclude password field from the results
+    console.log(users);
+    if (!users || users.length === 0) {
+      return res.status(404).json({ message: "No Users Found" });
+    }
+    return res.status(200).json(users);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// *-------------------------------
+//* getAllContacts Logic 📝
+// *-------------------------------
+
+const getAllContacts = async (req, res) => {
+  try {
+    const contacts = await Contact.find();
+    console.log(contacts);
+    if (!contacts || contacts.length === 0) {
+      return res.status(404).json({ message: "No Contacts Found" });
+    }
+    return res.status(200).json(contacts);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// *-------------------------------
+//* user delete Logic 📝
+// *-------------------------------
+
+const deleteUserById = async (req, res) => {
+  try {
+    const id = req.params.id;
+    await User.deleteOne({ _id: id });
+    return res.status(200).json({ message: "User Deleted Successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// *-------------------------------
+//* single user Logic 📝
+// *-------------------------------
+
+const getUserById = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const data = await User.findOne({ _id: id }, { password: 0 }); // Exclude password
+    return res.status(200).json(data);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// *-------------------------------
+//* user update Logic 📝
+// *-------------------------------
+
+const updateUserById = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const updatedUserData = req.body;
+
+    // Ensure that the password is not updated unless explicitly provided in the request
+    if (updatedUserData.password) {
+      // You can add some logic here to hash the password if needed
+      updatedUserData.password = updatedUserData.password; // Only set the password if it's passed
+    } else {
+      // Remove password from the update if it's not being explicitly set
+      delete updatedUserData.password;
+    }
+
+    const updatedData = await User.updateOne(
+      { _id: id },
+      {
+        $set: updatedUserData,
+      }
+    );
+    return res.status(200).json(updatedData);
+  } catch (error) {
+    next(error);
+  }
+};
+
+// *-------------------------------
+//* delete contact by ID 📝
+// *-------------------------------
+
+const deleteContactById = async (req, res) => {
+  try {
+    const id = req.params.id;
+    await Contact.deleteOne({ _id: id });
+    return res.status(200).json({ message: "Contact Deleted Successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+module.exports = {
+  getAllUsers,
+  getAllContacts,
+  deleteUserById,
+  getUserById,
+  updateUserById,
+  deleteContactById,
+};
